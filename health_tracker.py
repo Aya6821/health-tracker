@@ -65,8 +65,9 @@ class WirelessDualNetworkTopo(Topo):
         self.addLink(h12, s2b)
 
         # Connect the two routers wirelessly
-        self.addLink(r1, r2, cls=WirelessLink, params={'ssid': 'mininet-wifi'})
+        #self.addLink(r1, r2, cls=WirelessLink, params={'ssid': 'mininet-wifi'})
 
+        self.addLink(r1,r2) #Physical link
 def run():
     # Set logging level
     setLogLevel('info')
