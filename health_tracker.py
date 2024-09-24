@@ -4,7 +4,7 @@ from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.cli import CLI
 from mininet.log import setLogLevel
-from mininet.link import Link, WirelessLink
+#from mininet.link import Link, WirelessLink
 
 class WirelessDualNetworkTopo(Topo):
     def build(self):
