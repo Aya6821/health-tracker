@@ -84,6 +84,4 @@ def run():
     
     # Stop the network when done
     net.stop()
-
-if _name_ == '_main_':
-    run()
+run()
