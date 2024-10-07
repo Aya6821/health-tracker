@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.cli import CLI
 from mininet.log import setLogLevel
-#from mininet.link import Link, WirelessLink
+from mininet.node import OVSController
+from mininet.topo import Topo
 
-class WirelessDualNetworkTopo(Topo):
+# Define the topology class
+class healthNetTopo(Topo):
     def build(self):
         # Create routers
         r1 = self.addHost('r1', ip='10.0.0.1')
@@ -64,24 +65,48 @@ class WirelessDualNetworkTopo(Topo):
         self.addLink(h11, s2b)
         self.addLink(h12, s2b)
 
-        # Connect the two routers wirelessly
-        #self.addLink(r1, r2, cls=WirelessLink, params={'ssid': 'mininet-wifi'})
+        # Main Switch
+        s3 = self.addSwitch('s3')
 
-        self.addLink(r1,r2) #Physical link
+        # Connect the two routers
+        self.addLink(r1, s3)
+        self.addLink(r2, s3)
+
+# Main function to create and run the network
 def run():
     # Set logging level
     setLogLevel('info')
 
-    # Create the network using the WirelessDualNetworkTopo
-    topo = WirelessDualNetworkTopo()
-    net = Mininet(topo=topo)
-    
+    # Create the network using the healthNetTopo
+    topo = healthNetTopo()
+    net = Mininet(topo=topo, controller=OVSController)
+
     # Start the network
     net.start()
-    
-    # Open the command line interface
+
+    # Get the routers
+    r1 = net.get('r1')
+    r2 = net.get('r2')
+
+    # Configure router interfaces manually
+    r1.cmd('ifconfig r1-eth0 10.0.0.1/24')  # r1 connected to its subnet
+    r1.cmd('ifconfig r1-eth1 192.168.1.1/24')  # r1 connected to s3 (central switch)
+
+    r2.cmd('ifconfig r2-eth0 10.0.1.1/24')  # r2 connected to its subnet
+    r2.cmd('ifconfig r2-eth1 192.168.1.2/24')  # r2 connected to s3 (central switch)
+
+    # Enable IP forwarding on the routers
+    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
+    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
+
+    # Add static routes to enable communication between the subnets via s3
+    r1.cmd('ip route add 10.0.1.0/24 via 192.168.1.2')  # Route traffic for 10.0.1.0/24 to r2
+    r2.cmd('ip route add 10.0.0.0/24 via 192.168.1.1')  # Route traffic for 10.0.0.0/24 to r1
+
+    # Open the command line interface for testing
     CLI(net)
-    
+
     # Stop the network when done
     net.stop()
+
 run()
