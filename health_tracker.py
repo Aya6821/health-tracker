@@ -1,112 +1,80 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 from mininet.net import Mininet
+from mininet.node import Controller
 from mininet.cli import CLI
 from mininet.log import setLogLevel
-from mininet.node import OVSController
-from mininet.topo import Topo
 
-# Define the topology class
-class healthNetTopo(Topo):
-    def build(self):
-        # Create routers
-        r1 = self.addHost('r1', ip='10.0.0.1')
-        r2 = self.addHost('r2', ip='10.0.1.1')
+def customTopology():
+    net = Mininet(controller=Controller)
 
-        # Create switches and hosts for the first router
-        s1a = self.addSwitch('s1a')
-        s1b = self.addSwitch('s1b')
+    # Add a controller (optional for basic switching)
+    net.addController('c0')
 
-        h1 = self.addHost('h1', ip='10.0.0.2')
-        h2 = self.addHost('h2', ip='10.0.0.3')
-        h3 = self.addHost('h3', ip='10.0.0.4')
+    # Create hosts for s1
+    h1 = net.addHost('h1', ip='10.0.1.1')
+    h2 = net.addHost('h2', ip='10.0.1.2')
+    h3 = net.addHost('h3', ip='10.0.1.3')
 
-        h4 = self.addHost('h4', ip='10.0.0.5')
-        h5 = self.addHost('h5', ip='10.0.0.6')
-        h6 = self.addHost('h6', ip='10.0.0.7')
+    # Create hosts for s4
+    h4 = net.addHost('h4', ip='10.0.1.4')
+    h5 = net.addHost('h5', ip='10.0.1.5')
+    h6 = net.addHost('h6', ip='10.0.1.6')
 
-        # Connect first router to its switches
-        self.addLink(s1a, r1)
-        self.addLink(s1b, r1)
+    # Create hosts for s2
+    h7 = net.addHost('h7', ip='10.0.1.7')
+    h8 = net.addHost('h8', ip='10.0.1.8')
+    h9 = net.addHost('h9', ip='10.0.1.9')
 
-        # Connect hosts to the first switch of the first router
-        self.addLink(h1, s1a)
-        self.addLink(h2, s1a)
-        self.addLink(h3, s1a)
+    # Create hosts for s6
+    h10 = net.addHost('h10', ip='10.0.1.10')
+    h11 = net.addHost('h11', ip='10.0.1.11')
+    h12 = net.addHost('h12', ip='10.0.1.12')
 
-        # Connect hosts to the second switch of the first router
-        self.addLink(h4, s1b)
-        self.addLink(h5, s1b)
-        self.addLink(h6, s1b)
+    # Create switches
+    s1 = net.addSwitch('s1')
+    s2 = net.addSwitch('s2')
+    s3 = net.addSwitch('s3')  # Central switch
+    s4 = net.addSwitch('s4')
+    s5 = net.addSwitch('s5')  # Switch connecting s3 to s2 and s6
+    s6 = net.addSwitch('s6')
+    
+    # Set up links between devices
+    # Links for s1
+    net.addLink(h1, s1)
+    net.addLink(h2, s1)
+    net.addLink(h3, s1)
 
-        # Create switches and hosts for the second router
-        s2a = self.addSwitch('s2a')
-        s2b = self.addSwitch('s2b')
+    # Links for s4
+    net.addLink(h4, s4)
+    net.addLink(h5, s4)
+    net.addLink(h6, s4)
 
-        h7 = self.addHost('h7', ip='10.0.1.2')
-        h8 = self.addHost('h8', ip='10.0.1.3')
-        h9 = self.addHost('h9', ip='10.0.1.4')
+    # Links for s2
+    net.addLink(h7, s2)
+    net.addLink(h8, s2)
+    net.addLink(h9, s2)
 
-        h10 = self.addHost('h10', ip='10.0.1.5')
-        h11 = self.addHost('h11', ip='10.0.1.6')
-        h12 = self.addHost('h12', ip='10.0.1.7')
+    # Links for s6
+    net.addLink(h10, s6)
+    net.addLink(h11, s6)
+    net.addLink(h12, s6)
 
-        # Connect second router to its switches
-        self.addLink(s2a, r2)
-        self.addLink(s2b, r2)
-
-        # Connect hosts to the first switch of the second router
-        self.addLink(h7, s2a)
-        self.addLink(h8, s2a)
-        self.addLink(h9, s2a)
-
-        # Connect hosts to the second switch of the second router
-        self.addLink(h10, s2b)
-        self.addLink(h11, s2b)
-        self.addLink(h12, s2b)
-
-        # Main Switch
-        s3 = self.addSwitch('s3')
-
-        # Connect the two routers
-        self.addLink(r1, s3)
-        self.addLink(r2, s3)
-
-# Main function to create and run the network
-def run():
-    # Set logging level
-    setLogLevel('info')
-
-    # Create the network using the healthNetTopo
-    topo = healthNetTopo()
-    net = Mininet(topo=topo, controller=OVSController)
+    # Connect switches
+    net.addLink(s1, s3)  # s1 to s3
+    net.addLink(s4, s3)  # s4 to s3
+    net.addLink(s3, s5)  # s3 to s5
+    net.addLink(s5, s2)  # s5 to s2
+    net.addLink(s5, s6)  # s5 to s6
 
     # Start the network
     net.start()
 
-    # Get the routers
-    r1 = net.get('r1')
-    r2 = net.get('r2')
-
-    # Configure router interfaces manually
-    r1.cmd('ifconfig r1-eth0 10.0.0.1/24')  # r1 connected to its subnet
-    r1.cmd('ifconfig r1-eth1 192.168.1.1/24')  # r1 connected to s3 (central switch)
-
-    r2.cmd('ifconfig r2-eth0 10.0.1.1/24')  # r2 connected to its subnet
-    r2.cmd('ifconfig r2-eth1 192.168.1.2/24')  # r2 connected to s3 (central switch)
-
-    # Enable IP forwarding on the routers
-    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
-
-    # Add static routes to enable communication between the subnets via s3
-    r1.cmd('ip route add 10.0.1.0/24 via 192.168.1.2')  # Route traffic for 10.0.1.0/24 to r2
-    r2.cmd('ip route add 10.0.0.0/24 via 192.168.1.1')  # Route traffic for 10.0.0.0/24 to r1
-
-    # Open the command line interface for testing
+    # Start the Mininet CLI to interact with the network
     CLI(net)
 
     # Stop the network when done
     net.stop()
-
-run()
+if __name__ == '__main__':
+    setLogLevel('info')
+    customTopology()
