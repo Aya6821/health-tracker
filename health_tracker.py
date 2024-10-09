@@ -107,6 +107,4 @@ def customTopo():
     info('* Stopping network\n')
     net.stop()
 
-if _name_ == '_main_':
-    setLogLevel('info')
-    customTopo()
+run()
