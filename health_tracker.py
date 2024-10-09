@@ -33,10 +33,8 @@ class MyTopo(Topo):
             self.addLink(s4, hosts[i + 9]) # Connect h10, h11, h12 to s4
 
 def run():
-    # Define the name of the topology
-    name = "MyNetworkTopology"
     topo = MyTopo()
-    net = Mininet(topo=topo, name=name)
+    net = Mininet(topo=topo)
     net.start()
     
     # Set IP addresses for routers
