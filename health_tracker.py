@@ -27,10 +27,10 @@ class MyTopo(Topo):
         
         # Connect switches to hosts
         for i in range(3):
-            self.addLink(s1, hosts[i])    # Connect h1, h2, h3 to s1
-            self.addLink(s2, hosts[i + 3]) # Connect h4, h5, h6 to s2
-            self.addLink(s3, hosts[i + 6]) # Connect h7, h8, h9 to s3
-            self.addLink(s4, hosts[i + 9]) # Connect h10, h11, h12 to s4
+            self.addLink(s1, hosts[i])    # h1, h2, h3 to s1
+            self.addLink(s2, hosts[i + 3]) # h4, h5, h6 to s2
+            self.addLink(s3, hosts[i + 6]) # h7, h8, h9 to s3
+            self.addLink(s4, hosts[i + 9]) # h10, h11, h12 to s4
 
 def run():
     topo = MyTopo()
@@ -55,5 +55,5 @@ def run():
     CLI(net)
     net.stop()
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     run()
