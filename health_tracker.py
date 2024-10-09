@@ -68,7 +68,10 @@ def customTopo():
     net.addLink(h10, s4)
     net.addLink(h11, s4)
     net.addLink(h12, s4)
-
+    # Main function to create and run the network
+def run():
+    # Set logging level
+    setLogLevel('info')
     info('* Starting network\n')
     net.start()
 
