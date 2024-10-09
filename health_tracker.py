@@ -57,5 +57,5 @@ def run():
     CLI(net)
     net.stop()
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     run()
