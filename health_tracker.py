@@ -1,80 +1,80 @@
 #!/usr/bin/python
 
-from mininet.net import Mininet
-from mininet.node import Controller
+from mininet.topo import Topo
+from (link unavailable) import Mininet
+from mininet.node import Node
+from mininet.log import setLogLevel, info
 from mininet.cli import CLI
-from mininet.log import setLogLevel
 
-def customTopology():
-    net = Mininet(controller=Controller)
+class Router(Node):
+    "A Node with IP forwarding enabled."
 
-    # Add a controller (optional for basic switching)
-    net.addController('c0')
+    def config(self, **params):
+        super(Router, self).config(**params)
+        # Enable IP forwarding
+        self.cmd('sysctl net.ipv4.ip_forward=1')
 
-    # Create hosts for s1
-    h1 = net.addHost('h1', ip='10.0.1.1')
-    h2 = net.addHost('h2', ip='10.0.1.2')
-    h3 = net.addHost('h3', ip='10.0.1.3')
+    def terminate(self):
+        self.cmd('sysctl net.ipv4.ip_forward=0')
+        super(Router, self).terminate()
 
-    # Create hosts for s4
-    h4 = net.addHost('h4', ip='10.0.1.4')
-    h5 = net.addHost('h5', ip='10.0.1.5')
-    h6 = net.addHost('h6', ip='10.0.1.6')
+class NetworkTopo(Topo):
+    "A network topology with 12 hosts, 4 switches, and 2 routers."
 
-    # Create hosts for s2
-    h7 = net.addHost('h7', ip='10.0.1.7')
-    h8 = net.addHost('h8', ip='10.0.1.8')
-    h9 = net.addHost('h9', ip='10.0.1.9')
+    def build(self):
+        # Create routers
+        router1 = self.addNode('router1', cls=Router)
+        router2 = self.addNode('router2', cls=Router)
 
-    # Create hosts for s6
-    h10 = net.addHost('h10', ip='10.0.1.10')
-    h11 = net.addHost('h11', ip='10.0.1.11')
-    h12 = net.addHost('h12', ip='10.0.1.12')
+        # Create switches
+        switch1 = self.addSwitch('s1')
+        switch2 = self.addSwitch('s2')
+        switch3 = self.addSwitch('s3')
+        switch4 = self.addSwitch('s4')
 
-    # Create switches
-    s1 = net.addSwitch('s1')
-    s2 = net.addSwitch('s2')
-    s3 = net.addSwitch('s3')  # Central switch
-    s4 = net.addSwitch('s4')
-    s5 = net.addSwitch('s5')  # Switch connecting s3 to s2 and s6
-    s6 = net.addSwitch('s6')
-    
-    # Set up links between devices
-    # Links for s1
-    net.addLink(h1, s1)
-    net.addLink(h2, s1)
-    net.addLink(h3, s1)
+        # Create hosts
+        host1 = self.addHost('h1', ip='10.0.1.1/24')
+        host2 = self.addHost('h2', ip='10.0.1.2/24')
+        host3 = self.addHost('h3', ip='10.0.1.3/24')
+        host4 = self.addHost('h4', ip='10.0.2.1/24')
+        host5 = self.addHost('h5', ip='10.0.2.2/24')
+        host6 = self.addHost('h6', ip='10.0.2.3/24')
+        host7 = self.addHost('h7', ip='10.0.3.1/24')
+        host8 = self.addHost('h8', ip='10.0.3.2/24')
+        host9 = self.addHost('h9', ip='10.0.3.3/24')
+        host10 = self.addHost('h10', ip='10.0.4.1/24')
+        host11 = self.addHost('h11', ip='10.0.4.2/24')
+        host12 = self.addHost('h12', ip='10.0.4.3/24')
 
-    # Links for s4
-    net.addLink(h4, s4)
-    net.addLink(h5, s4)
-    net.addLink(h6, s4)
+        # Connect hosts to switches
+        self.addLink(host1, switch1)
+        self.addLink(host2, switch1)
+        self.addLink(host3, switch1)
+        self.addLink(host4, switch2)
+        self.addLink(host5, switch2)
+        self.addLink(host6, switch2)
+        self.addLink(host7, switch3)
+        self.addLink(host8, switch3)
+        self.addLink(host9, switch3)
+        self.addLink(host10, switch4)
+        self.addLink(host11, switch4)
+        self.addLink(host12, switch4)
 
-    # Links for s2
-    net.addLink(h7, s2)
-    net.addLink(h8, s2)
-    net.addLink(h9, s2)
+        # Connect switches to routers
+        self.addLink(switch1, router1, intfName1='s1-eth0', intfName2='router1-eth0')
+        self.addLink(switch2, router1, intfName1='s2-eth0', intfName2='router1-eth1')
+        self.addLink(switch3, router2, intfName1='s3-eth0', intfName2='router2-eth0')
+        self.addLink(switch4, router2, intfName1='s4-eth0', intfName2='router2-eth1')
+        self.addLink(router1, router2, intfName1='router1-eth2', intfName2='router2-eth2')
 
-    # Links for s6
-    net.addLink(h10, s6)
-    net.addLink(h11, s6)
-    net.addLink(h12, s6)
-
-    # Connect switches
-    net.addLink(s1, s3)  # s1 to s3
-    net.addLink(s4, s3)  # s4 to s3
-    net.addLink(s3, s5)  # s3 to s5
-    net.addLink(s5, s2)  # s5 to s2
-    net.addLink(s5, s6)  # s5 to s6
-
-    # Start the network
+def run():
+    topo = NetworkTopo()
+    net = Mininet(topo=topo)
     net.start()
-
-    # Start the Mininet CLI to interact with the network
+    info('*** Running CLI\n')
     CLI(net)
-
-    # Stop the network when done
     net.stop()
+
 if __name__ == '__main__':
     setLogLevel('info')
-    customTopology()
+    run()
