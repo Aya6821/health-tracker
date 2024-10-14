@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from mininet.topo import Topo
-from (link unavailable) import Mininet
+from mininet.net import Mininet
 from mininet.node import Node
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
